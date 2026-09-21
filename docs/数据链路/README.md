@@ -5,7 +5,7 @@
 当前共同工作分支：
 
 ~~~text
-rewrite/data-path
+main
 ~~~
 
 双方 Codex 都可以查看整个仓库，包括对方负责的目录。修改权限按目录划分。
