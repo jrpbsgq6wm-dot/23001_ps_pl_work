@@ -39,7 +39,7 @@ git status --short --branch
 ~~~powershell
 git diff --check
 git status --short
-git add <自己的目录> docs
+git add pl docs
 git commit -m "pl: ..."
 git push origin main
 ~~~
