@@ -1,0 +1,24 @@
+# PS build output
+**/Debug/
+**/.deps/
+**/.objs/
+**/.settings/
+**/*.o
+
+# Editor and temporary files
+**/*.user
+**/*.tmp
+**/*.log
+
+# Vivado/Vitis generated output; keep source, constraints and export manifests
+**/.Xil/
+**/.cache/
+**/.runs/
+**/.gen/
+**/vivado_project/
+
+# Large generated images should be added deliberately, preferably with Git LFS
+*.bit
+*.bin
+*.xsa
+
