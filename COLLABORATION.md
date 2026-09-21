@@ -1,48 +1,68 @@
 # 23001 PS/PL GitHub 协作规则
 
-## 仓库职责
+## 当前目标
 
-这个仓库保存 PS 代码、PS 侧设备树副本、PL 配置导出、接口文档和联调记录。
+本仓库用于重构以下数据链路：
 
-- `ps/`：由 PS 侧维护，包含源码、设备树和 PS 侧配置。
-- `ps/20260916/`：PS 源码和编译工程文件。
-- `ps/device-tree/`：由 PS 侧维护，目前只放 `system.dts`。设备树正式纳入仓库前，必须确认它对应的硬件版本。
-- `pl/`：由 PL 侧维护，只放 PL 配置、寄存器导出、地址映射、构建脚本和版本说明。
-- `docs/issues/`：一项接口问题一个文件，避免双方同时编辑同一个长文档。
-- `docs/interface/`：双方确认后的接口结论。
-- `docs/test-reports/`：硬件联调结果。
+~~~text
+湿端 IQ → PL → DSP → PL → PS → 显控
+~~~
 
-## 分支规则
+当前共同工作分支是 main，旧系统基线由 baseline-20260921 标签保存。本次不重构温度、升级、PTP、电源和其他无关业务。
 
-- `main`：当前 PS/PL 数据链路重构的共同工作分支。旧系统基线由 `baseline-20260921` 标签保存。
-- `ps/<issue>`：PS 源码或设备树修改。
-- `pl/<issue>`：PL 配置或 PL 接口导出修改。
+## 目录职责
 
-两台电脑都直接在 `main` 上协作。每次修改前先执行：
+- ps/20260916/：PS 源码，由 PS Codex 修改，PL Codex 只读查看；
+- ps/device-tree/：PS 设备树，由 PS Codex 修改，PL Codex 只读查看；
+- pl/：PL 配置、寄存器导出、地址映射、构建说明和 PL 侧实现，由 PL Codex 修改；
+- docs/数据链路/：寄存器、数据帧、DMA、中断和 DSP 接口；
+- docs/协作记录/：问题、证据、回复、工程师裁定和验证记录；
+- docs/协作沟通/：协作方式和其他非接口沟通。
 
-```powershell
-git fetch --all --prune
-git status
-git log --oneline --decorate -10
-```
+PS Codex 和 PL Codex 都可以查看整个仓库，但不能修改对方负责的代码目录。发现对方目录的问题时，写入协作记录，由目录所属 Codex 修改。
 
-不要在两个 Codex 会话中使用同一个工作目录。两台电脑各自克隆仓库；每次提交都必须先拉取远程更新，禁止强制推送和覆盖别人的提交。PS Codex 和 PL Codex 都可以查看整个仓库，但只能修改各自负责的目录。
+## Git 使用方式
 
-## 接口变更规则
+两台电脑各自克隆同一个仓库，不能共用一个本地工作目录。双方直接在 main 上协作，不使用 Pull Request，也不设置第三个集成 Codex。
 
-未标记为“双方确认”的接口不能进入 PS 代码或设备树。PL 侧提交必须给出寄存器地址、位定义、单位、写入时机、数据长度、中断时序和配置版本。PS 侧实现必须在问题记录中填写对应的提交号。
+开始工作前：
 
-当前待确认问题见 `docs/issues/`，重点包括 NREAD 有效长度、IRQ 时序、ROLL_INTERVAL、frequency_code 和 BUILD_ID 兼容策略。
+~~~powershell
+git fetch origin
+git switch main
+git pull --ff-only
+git status --short --branch
+~~~
+
+完成工作后：
+
+~~~powershell
+git diff --check
+git status --short
+git add <自己的目录> docs
+git commit -m "pl: ..."
+git push origin main
+~~~
+
+提交前必须确认没有修改对方代码目录。禁止强制推送、覆盖他人提交或凭猜测解决协议冲突。推送被拒绝时先获取远程更新，发生冲突就暂停并记录。
+
+## 接口规则
+
+涉及寄存器、数据帧、DMA、IRQ、DSP 时序、设备树、错误、复位、超时、性能或显控格式的内容，必须写入 docs/数据链路/ 和必要的 docs/协作记录/。
+
+以下内容必须由 PS/PL 工程师裁定：真实 IQ 格式、DSP 输入输出、最终寄存器地址、DMA 缓冲区和 Cache、IRQ 时序、复位状态、错误恢复、性能指标和硬件验收。
+
+普通文件组织、已确认接口的封装、构建脚本、测试脚本和注释可以由对应 Codex 自行完成。
 
 ## 提交信息
 
-提交信息使用以下前缀：
-
-```text
+~~~text
 ps: ...
 pl: ...
 docs: ...
 test: ...
-```
+~~~
 
-一个提交只完成一类明确的事情。通过硬件验证后，在 `main` 上建立带日期和版本号的标签，例如 `pspl-20260921-r1`。
+硬件验证完成后，再在 main 上建立正式版本标签，例如 pspl-20260921-r1。
+
+PL 工程师第一次接入仓库时，使用本地交付的《PL工程师_23001协作仓库与PL Codex使用说明》，其中包含 GitHub 授权、SSH、克隆、Codex 打开仓库和日常协作步骤。
